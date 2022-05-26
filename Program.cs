@@ -16,40 +16,84 @@ namespace testdot
         static IWebHost host;
         static void Main(string[] args)
         {
-            int port = 1988;
-            host = new WebHostBuilder().UseKestrel((options) =>
-            {
-                options.Listen(IPAddress.Any, port, listenOptions => { });
-            }).Configure(app =>
-            {
-                app.Run(ProcessAsync);
-            }).Build();
-
-            Console.WriteLine("http begin at:1988");
-            host.Start();
-
-            //mainthread loop
+            var server = new light.http.server.httpserver();//light?,上下文没有，提示的light是在using System.Windows.Media.Media3D;下
+            server.SetFailAction(on404);
+            server.SetHttpAction("/abc", onAbc);
+            server.SetHttpAction("/aaa", onAaa);
+            server.SetHttpController("/con_abc", new MyController());//根据path去分路由表
+            server.Start(1988);
+            Console.WriteLine("server on:1988");
             while (true)
             {
                 Console.ReadLine();
             }
         }
-        static async Task ProcessAsync(HttpContext context)
+
+        //响应方法
+        static async Task on404(HttpContext context)
         {
-            try
-            {
-                context.Response.ContentType = "application/json;charset=UTF-8";
-                context.Response.Headers["Access-Control-Allow-Origin"] = "*";
-                context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST";
-                context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type";
-                context.Response.Headers["Access-Control-Max-Age"] = "31536000";
-                var path = context.Request.Path.Value;
-                await context.Response.WriteAsync("hello:" + path);
-            }
-            catch
+            await context.Response.WriteAsync("you got a 404");
+        }
+        static async Task onAbc(HttpContext context)
+        {
+            await context.Response.WriteAsync("you got a abc");
+
+        }
+        static async Task onAaa(HttpContext context)
+        {
+            await context.Response.WriteAsync("you got a aaa");
+        }
+    }
+    class MyController : light.http.server.IController
+    {
+        public async Task ProcessAsync(HttpContext context, string path)
+        {
+            await context.Response.WriteAsync("you got a MyController");
+        }
+    }
+
+
+    //这里这个应该是放在什么位置
+    public void Star(int port, int potForHttps = 0, string pfxpath = null, string password = null)
+    {
+        host = new WebHostBuilder().UseKestrel((options) =>//host是什么
+        {
+            options.Listen(IPAddress.Any, port, listenOptions =>
             {
 
+            });
+            if (portForHttps != 0)
+            {
+                options.Listen(IPAddress.Any, portForHttps, listenOptions =>
+                {
+                    listenOptions.UseHttps(pfxpath, password);
+                });
             }
-        }
+        }).Configure(app =>  //建立socket
+        {
+            app.UseWebSockets();
+            app.UseResponseCompression();
+            app.Run(ProcessAsync);  //异步运行
+        }).ConfigureServices(services =>
+        {
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = false;
+                options.Providers.Add<GzipCompressionProvider>();
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/json" })//图片这里没有给全
+
+
+                });
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Fastest;
+            });
+
+        }).Build();
+
+
+        host.Start();
+
+
     }
 }
