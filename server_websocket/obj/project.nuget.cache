@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "YDj+CFMEUOesIGhf6ijO/gv1Ls6/jjw6mTn23tq9EokHFXGgvqxrzCXJuBxPv1gWA9qzor60GnKg7m0hUS5G8w==",
+  "success": true,
+  "projectFilePath": "E:\\WEb\\WebLearn\\server_websocket\\server_websocket.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\杜德虎\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
